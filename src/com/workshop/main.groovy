@@ -8,6 +8,7 @@ def main(script) {
     // Object initialization
 
     c = new Config()
+    sprebuild = new prebuild()
 
     // Pipeline object
 
@@ -18,18 +19,25 @@ def main(script) {
     def app_port = ("${script.env.app_port}" != null) ? "${script.env.app_port}" : ""
     def pr_num = ("${script.env.pr_num}" != null) ? "${script.env.pr_num}" : ""
 
+    def dockerTool = tool name: 'docker', type: 'dockerTool'
+
     p = new Pipeline(
         repository_name,
         branch_name,
         git_user,
         docker_user,
         app_port,
-        pr_num
+        pr_num,
+        dockerTool
     )
 
     ansiColor('xterm') {
-        stage('Test stage') {
-            println "Hello!"
+        stage('Pre Build - Details') {
+            sprebuild.validation(p)
+            sprebuild.details(p)
+        }
+        stage('Pre Build - Checkout & Test') {
+            sprebuild.checkoutBuildTest(p)
         }
     }
 }
